@@ -23,8 +23,8 @@ public class Lab1 {
     try {
 
       // Default params for program initialization.
-      tsi.setSpeed(1, speed1);
-      tsi.setSpeed(2, speed2);
+    //  tsi.setSpeed(1, speed1);
+     tsi.setSpeed(2, speed2);
 
     } catch (CommandException e) {
       e.printStackTrace(); // or only e.getMessage() for the error
@@ -65,7 +65,7 @@ public class Lab1 {
      * Returns true if sensor at given coords with given train id is active.
      * Basically instead of writing:
      * "se.getStatus() == se.ACTIVE"
-     * 
+     *
      * @param x
      * @param y
      * @param id
@@ -90,13 +90,13 @@ public class Lab1 {
      * takes as parameter
      * a speed that the simulator sets the train to. As in, input whishful speed
      * when train hits sensor.
-     * 
+     *
      * @param x
      * @param y
      * @param id
      * @param speed
      * @param se
-     * 
+     *
      *              This method is basically abstraction to:
      *              if (sensorEvent.getXpos() == 8 && sensorEvent.getYpos() == 3
      *              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
@@ -149,61 +149,56 @@ public class Lab1 {
         while (true) {
           SensorEvent sensorEvent = tsi.getSensor(id);
 
-          if (sensor_active(10, 7, id, sensorEvent)){
-            System.out.println("HELLO");
+          if (sensorEvent.getXpos() == 10 && sensorEvent.getYpos() == 7
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
           }
           if (sensorEvent.getXpos() == 17 && sensorEvent.getYpos() == 9
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            System.out.println("WORLD");
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
             tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
           }
           if (sensorEvent.getXpos() == 16 && sensorEvent.getYpos() == 7
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
             tsi.setSwitch(17, 7, TSimInterface.SWITCH_RIGHT);
           }
-           if (sensorEvent.getXpos() == 5 && sensorEvent.getYpos() == 9
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+          if (sensorEvent.getXpos() == 5 && sensorEvent.getYpos() == 9
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
             tsi.setSwitch(4, 9, TSimInterface.SWITCH_LEFT);
-          } 
-          /* if (sensorEvent.getXpos() == 2 && sensorEvent.getYpos() == 11
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+          }
+          if (sensorEvent.getXpos() == 1 && sensorEvent.getYpos() == 10
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
             tsi.setSwitch(3, 11, TSimInterface.SWITCH_RIGHT);
-          } */
+          }
           if (sensorEvent.getXpos() == 10 && sensorEvent.getYpos() == 13
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
             break_and_reverse(id, speed, sensorEvent);
           }
 
           // NEW SENSOR.. V2
           if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 11
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
             if (direction == Train.Direction.SOUTH) {
               break_and_reverse(id, speed, sensorEvent);
             }
           }
           if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 3
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            break_and_reverse(id, speed, sensorEvent);
-          }
-
-          if (sensorEvent.getXpos() == 1 && sensorEvent.getYpos() == 10
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            if (direction == Train.Direction.SOUTH) {
-              System.out.println("SWITCH 1");
-              tsi.setSwitch(4, 9, TSimInterface.SWITCH_RIGHT);
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+            if (direction == Direction.NORTH) {
+              break_and_reverse(id, speed, sensorEvent);
             }
-            // set_switch_dir(4, 9, direction);
           }
           if (sensorEvent.getXpos() == 10 && sensorEvent.getYpos() == 9
-              && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            if (direction == Train.Direction.NORTH) {
-              System.out.println("SWITCH 2");
-              tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
-            }
-            // set_switch_dir(4, 9, direction);
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+            tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
           }
-        }
 
+          //if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 9
+               //   && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+            //if (direction == Train.Direction.NORTH){
+            //  System.out.print("test");
+             // tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+
+          //}
+        }
       } catch (Exception e) {
         e.printStackTrace();
         ;
