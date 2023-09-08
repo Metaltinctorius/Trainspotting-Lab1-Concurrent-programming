@@ -23,8 +23,8 @@ public class Lab1 {
     try {
 
       // Default params for program initialization.
-    //  tsi.setSpeed(1, speed1);
-     tsi.setSpeed(2, speed2);
+      // tsi.setSpeed(1, speed1);
+      tsi.setSpeed(2, speed2);
 
     } catch (CommandException e) {
       e.printStackTrace(); // or only e.getMessage() for the error
@@ -56,12 +56,9 @@ public class Lab1 {
       SOUTH
     }
 
-
-
     // FUNCTIONS:
 
-
-     /**
+    /**
      * Returns true if sensor at given coords with given train id is active.
      * Basically instead of writing:
      * "se.getStatus() == se.ACTIVE"
@@ -81,11 +78,7 @@ public class Lab1 {
       return false;
     }
 
-
-
-
-
-  /**
+    /**
      * Takes in the coords for the sensor, uses the running train thread as id, and
      * takes as parameter
      * a speed that the simulator sets the train to. As in, input whishful speed
@@ -117,7 +110,6 @@ public class Lab1 {
         }
       }
     }
-
 
     public void break_and_reverse(int id, int speed, SensorEvent se) {
       try {
@@ -191,21 +183,20 @@ public class Lab1 {
             tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
           }
 
-          //if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 9
-               //   && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            //if (direction == Train.Direction.NORTH){
-            //  System.out.print("test");
-             // tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
-
-          //}
+          if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 9
+                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+            if (direction == Train.Direction.NORTH){
+              System.out.print("test");
+              tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+            }
+          }
         }
+
+          
       } catch (Exception e) {
         e.printStackTrace();
-        ;
       }
-
     }
-
   }
-
 }
+
