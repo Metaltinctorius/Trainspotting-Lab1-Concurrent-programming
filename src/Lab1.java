@@ -100,7 +100,7 @@ public class Lab1 {
             break_and_reverse(id, speed, sensorEvent);
           }
 
-          // NEW SENSOR
+          // NEW SENSOR.. V2
           if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 11
               && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
                 if(direction == Train.Direction.SOUTH){
