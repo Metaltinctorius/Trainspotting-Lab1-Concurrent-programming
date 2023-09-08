@@ -107,6 +107,10 @@ public class Lab1 {
             break_and_reverse(id, speed, sensorEvent);
                 }
           }
+          if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 3
+                    && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+                break_and_reverse(id, speed, sensorEvent);
+            }
         }
 
       } catch (Exception e) {
