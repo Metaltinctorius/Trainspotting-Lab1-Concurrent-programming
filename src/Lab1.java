@@ -3,7 +3,7 @@ import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
 import TSim.*;
-//fuck git
+
 public class Lab1 {
 
   public Lab1(int speed1, int speed2) {
@@ -12,27 +12,44 @@ public class Lab1 {
     TSimInterface tsi = TSimInterface.getInstance();
 
 
-    // Train objects.
-    Train train1 = new Train(1, speed1, Train.Direction.SOUTH);
-    Train train2 = new Train(2, speed2, Train.Direction.NORTH);
+    // ArrayList för Semaforer.
+    // 11 September. 17:45
+    // -----------------------------------------------------------
+    
 
+    Semaphore critical_section_1 = new Semaphore(1);
+    Semaphore critical_section_2 = new Semaphore(1);
+    Semaphore critical_section_3 = new Semaphore(1);
+    
+
+    ArrayList <Semaphore> semaphores = new ArrayList<>();
+    
+
+    semaphores.add( 0, critical_section_1);
+    semaphores.add(1,  critical_section_2);
+    semaphores.add( 2, critical_section_3);
+    System.out.println(semaphores);
+
+    // ------------------------------------------------------------
+
+
+    // Train objects.
+    Train train1 = new Train(1, speed1, Train.Direction.SOUTH, semaphores);
+    Train train2 = new Train(2, speed2, Train.Direction.NORTH, semaphores);
 
     // Threads for the trains (input: train)
     Thread trainThread1 = new Thread(train1);
     Thread trainThread2 = new Thread(train2);
 
-
     // Start the threads
     trainThread1.start();
     trainThread2.start();
-  
+    
 
     try {
 
       // Default params for program initialization.
       // train1 = start pos north, train2 = star pos south
-     tsi.setSpeed(1, speed1);
-     tsi.setSpeed(2, speed2);
       tsi.setSpeed(1, speed1);
       tsi.setSpeed(2, speed2);
 
@@ -45,32 +62,39 @@ public class Lab1 {
 
   class Train implements Runnable {
 
-
     // According to slides, a semaphore with one count is also a binary semaphore.
-    Semaphore first_switch_semaphore = new Semaphore(1);
+    // Semaphore critical_section_3 = new Semaphore(1);
 
-
+    
 
     // Creation of a tsi interface
     TSimInterface tsi = TSimInterface.getInstance();
 
-
-
     // Stack for checking semaphores at critical sections
     Stack<Double> stack = new Stack<>();
-
 
     // Parameters for a train
     int id;
     int speed;
     Direction direction;
-
+    ArrayList <Semaphore> semaphores;
 
     // Constructor for a train
-    public Train(int id, int speed, Direction direction) {
+    public Train(int id, int speed, Direction direction, ArrayList <Semaphore> semaphores) {
       this.id = id;
       this.speed = speed;
       this.direction = direction;
+      this.semaphores = semaphores;
+    }
+
+
+
+    public Direction getDirection() {
+      return this.direction;
+    }
+
+    public void setDirection(Direction dir) {
+      this.direction = dir;
     }
 
     // Directions a train can go, either north or south (more develop to come)
@@ -79,7 +103,7 @@ public class Lab1 {
       SOUTH
     }
 
-    //------------- Functionality and Methods --------------
+    // ------------- Functionality and Methods --------------
 
     /**
      * Method for reversing direction. Basically inverts the Enum Direction.
@@ -88,15 +112,13 @@ public class Lab1 {
      */
     public void reverseDirection(Direction direction) {
       if (direction == Train.Direction.NORTH) {
-        direction = Train.Direction.SOUTH;
-        System.out.println("Changed direction to " + direction);
+        setDirection(Train.Direction.SOUTH);
+        System.out.println("Changed direction to " + getDirection());
       } else {
-        direction = Train.Direction.NORTH;
-        System.out.println("Changed direction to " + direction);
+        setDirection(Train.Direction.NORTH);
+        System.out.println("Changed direction to " + getDirection());
       }
     }
-
-
 
     /**
      * Returns true if sensor at given coords with given train id is active.
@@ -161,10 +183,13 @@ public class Lab1 {
       try {
         tsi.setSpeed(id, 0);
         Thread.sleep(2000);
-        System.out.println("Wait OK");
-        tsi.setSpeed(id, -speed);
-        reverseDirection(direction);
-
+        if (direction == Train.Direction.SOUTH) {
+          tsi.setSpeed(id, -speed);
+          reverseDirection(direction);
+        } else {
+          tsi.setSpeed(id, -speed);
+          reverseDirection(direction);
+        }
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -172,6 +197,7 @@ public class Lab1 {
 
     /**
      * Sets the switch based on direciton. Maybe not needed.
+     * 
      * @param x
      * @param y
      * @param direction
@@ -188,52 +214,205 @@ public class Lab1 {
       }
     }
 
-    
-/* Sensor events in a somewhat south to north direction */
+    /* Sensor events in a somewhat south to north direction */
     @Override
     public void run() {
+
+
+      
+    Semaphore critical_section_1 = semaphores.get(0);
+    Semaphore critical_section_2 = semaphores.get(1);
+    Semaphore critical_section_3 = semaphores.get(2);
+
+
       try {
 
         while (true) {
           SensorEvent sensorEvent = tsi.getSensor(id);
 
-          // Sensor event triggered by the "first" switch (top to bottom).
-          if (sensor_active(19, 8, id, sensorEvent)){
+      /*     // Sensor event triggered by the "first" switch (top to bottom).
+          if (sensor_active(19, 8, id, sensorEvent)) {
             System.out.println(id + "activated switch");
             tsi.setSwitch(17, 7, TSimInterface.SWITCH_LEFT);
             System.out.println(id + "activated switch");
             if (direction == Train.Direction.NORTH) {
               try {
-                first_switch_semaphore.acquire(1);
+                semaphore.acquire(1);
                 System.out.println("Train " + id + " acquired Semaphore");
                 tsi.setSwitch(17, 7, TSimInterface.SWITCH_RIGHT);
                 System.out.println("Switch set to RIGHT");
-                if(sensor_active(14, 7, id, sensorEvent))
-                {
+                if (sensor_active(14, 7, id, sensorEvent)) {
                   tsi.setSwitch(17, 7, TSimInterface.SWITCH_LEFT);
                   System.out.println("Switch set to LEFT");
                 }
                 if (direction == Train.Direction.SOUTH) {
                   if (sensor_active(19, 8, id, sensorEvent)) {
-                    first_switch_semaphore.release();
+                    semaphore.release();
                     System.out.println("Train " + id + " released Semaphore");
                   }
                 }
               } finally {
                 tsi.setSwitch(17, 7, TSimInterface.SWITCH_LEFT);
+                System.out.println(id + "Could not acquire semaphore");
+              }
+            }
+          } */
+
+
+
+
+/**
+ * Critical Section 2.
+ * --------------------------------------------------------------------------------------------------
+ */
+          if (sensor_active(18, 9, id, sensorEvent)) {
+            if (direction == Train.Direction.SOUTH) {
+              try {
+                if(critical_section_2.tryAcquire(1)){
+                  critical_section_2.acquire(1);
+                  tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+                  System.out.println(id + " acquired Semaphore Critical Section 2");
+                }else{
+                  tsi.setSwitch(15, 9, TSimInterface.SWITCH_LEFT);
+                  tsi.setSpeed(id, 6);
+                }
+              }
+              catch (Exception e) {
+                e.printStackTrace();
               }
             }
           }
-        
             
-
           
+            if(sensor_active(1, 10, id, sensorEvent)){
+              if(direction == Train.Direction.NORTH){
+                try{
+                    critical_section_2.acquire(1);
+                    System.out.println(id + " acquired semaphore");
+                    tsi.setSpeed(id, 12);
+                    tsi.setSwitch(4, 9, TSimInterface.SWITCH_LEFT);{
+                  }
+                    
+                }
+                catch (Exception e) {
+                e.printStackTrace();
+              }
+              }
+            }
+
+            //----------------------------------------------------------------------------------------------------------
 
 
 
 
 
-          
+          //----------------------------------------- CRITICAL SECTION 3 ----------------------------------------------
+            if(sensor_active(10, 9, id, sensorEvent)){
+              if(direction == Train.Direction.NORTH){
+                try {
+
+                  System.out.println("jadnadsjda");
+                  critical_section_2.release(1);
+                  System.out.println("fandå");
+                  critical_section_3.acquire(1);
+                  System.out.println("TOOK SEM");
+                  
+                  System.out.println(id + " acquired Semaphore Critical Section 3");
+                  tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+                  
+                  if(sensor_active(19, 8, id, sensorEvent)){
+                    critical_section_3.release();
+                  }
+              }
+              catch (Exception e) {
+                e.printStackTrace();
+              }
+              }
+            }
+
+            if(sensor_active(14, 7, id, sensorEvent)){
+              if(direction == Train.Direction.SOUTH){
+                try {
+                if(critical_section_3.tryAcquire(1)){
+                  critical_section_3.acquire(1);
+                  System.out.println(id + " acquired Semaphore Critical Section 3");
+                  if(sensor_active(12, 10, id, sensorEvent)){
+                    critical_section_3.release();
+                  }
+                }else{
+                  System.out.println(id + " Failed to acquire " + critical_section_3);
+                  tsi.setSpeed(id, 0);
+                }
+              }
+              catch (Exception e) {
+                e.printStackTrace();
+              }
+              }
+            }
+            //--------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+         /*  // if(sensor_active(1, 10, id, sensorEvent))
+
+          if (sensor_active(1, 10, 1, sensorEvent)) {
+            tsi.setSwitch(3, 11, TSimInterface.SWITCH_RIGHT);
+          }
+
+          if (sensor_active(12, 10, 1, sensorEvent)) {
+            tsi.setSwitch(15, 9, TSimInterface.SWITCH_LEFT);
+          }
+          if (sensor_active(6, 10, 1, sensorEvent)) {
+            tsi.setSwitch(4, 9, TSimInterface.SWITCH_RIGHT);
+          }
+         /*  if (sensor_active(10, 9, 2, sensorEvent)) {
+            semaphore.acquire(1);
+
+            // try {
+            // tsi.setSpeed(id, 0);
+            // } finally {
+            tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+            // critical_section_2.release();
+            // }
+          } 
+
+          if (sensor_active(19, 8, 2, sensorEvent)) {
+            tsi.setSwitch(17, 7, TSimInterface.SWITCH_RIGHT);
+          }
+          if (sensor_active(14, 7, 1, sensorEvent)) {
+            tsi.setSwitch(17, 7, TSimInterface.SWITCH_RIGHT);
+          }
+          if (sensor_active(id, speed, id, sensorEvent)) {
+            break_and_reverse(id, speed, sensorEvent);
+          }
+          if (sensor_active(id, speed, id, sensorEvent)) {
+            break_and_reverse(id, speed, sensorEvent);
+          }
+          if (sensor_active(id, speed, id, sensorEvent)) {
+          }
+          if (sensor_active(id, speed, id, sensorEvent)) {
+          }
+          */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           // ----- Sensors for the spawn locations ------
 
           /*
@@ -266,9 +445,11 @@ public class Lab1 {
            * Destination for train 2 (station in north part of map)
            */
           if (sensor_active(14, 5, id, sensorEvent)) {
-            if (direction == Train.Direction.NORTH) {
-              break_and_reverse(id, speed, sensorEvent);
-            }
+            System.out.println("Before brake and reverse " + id);
+            // if (direction == Train.Direction.NORTH) {
+            System.out.println("Break and reverse " + id);
+            break_and_reverse(id, speed, sensorEvent);
+            // }
           }
         }
 
@@ -278,4 +459,3 @@ public class Lab1 {
     }
   }
 }
-  
