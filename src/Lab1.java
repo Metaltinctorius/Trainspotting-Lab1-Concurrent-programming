@@ -30,6 +30,9 @@ public class Lab1 {
     try {
 
       // Default params for program initialization.
+      // train1 = start pos north, train2 = star pos south
+     tsi.setSpeed(1, speed1);
+     tsi.setSpeed(2, speed2);
       tsi.setSpeed(1, speed1);
       tsi.setSpeed(2, speed2);
 
@@ -185,6 +188,8 @@ public class Lab1 {
       }
     }
 
+    
+/* Sensor events in a somewhat south to north direction */
     @Override
     public void run() {
       try {
@@ -221,6 +226,12 @@ public class Lab1 {
           }
         
             
+
+          
+
+
+
+
 
           
           // ----- Sensors for the spawn locations ------
@@ -267,3 +278,4 @@ public class Lab1 {
     }
   }
 }
+  
