@@ -3,7 +3,7 @@ import java.util.Stack;
 import java.util.concurrent.Semaphore;
 
 import TSim.*;
-
+//fuck git
 public class Lab1 {
 
   public Lab1(int speed1, int speed2) {
