@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 import TSim.*;
 
@@ -19,11 +20,12 @@ public class Lab1 {
     // Start the threads
     trainThread1.start();
     trainThread2.start();
-
+ 
     try {
 
       // Default params for program initialization.
-    //  tsi.setSpeed(1, speed1);
+      // train1 = start pos north, train2 = star pos south
+     tsi.setSpeed(1, speed1);
      tsi.setSpeed(2, speed2);
 
     } catch (CommandException e) {
@@ -43,6 +45,9 @@ public class Lab1 {
     int speed;
     Direction direction;
 
+    //Introducing semaphores
+    private Semaphore semaphore1 = new Semaphore(1);
+    private Semaphore semaphore2 = new Semaphore(1);
     // Constructor for a train
     public Train(int id, int speed, Direction direction) {
       this.id = id;
@@ -55,12 +60,8 @@ public class Lab1 {
       NORTH,
       SOUTH
     }
-
-
-
+    
     // FUNCTIONS:
-
-
      /**
      * Returns true if sensor at given coords with given train id is active.
      * Basically instead of writing:
@@ -142,6 +143,8 @@ public class Lab1 {
       }
     }
 
+    
+/* Sensor events in a somewhat south to north direction */
     @Override
     public void run() {
       try {
@@ -149,59 +152,51 @@ public class Lab1 {
         while (true) {
           SensorEvent sensorEvent = tsi.getSensor(id);
 
-          if (sensorEvent.getXpos() == 10 && sensorEvent.getYpos() == 7
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-          }
-          if (sensorEvent.getXpos() == 17 && sensorEvent.getYpos() == 9
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+          if (sensor_active(1, 10, 1, sensorEvent)) {
+            tsi.setSwitch(3,11, TSimInterface.SWITCH_RIGHT);
+          }       
+          if (sensor_active(4, 10, 1 , sensorEvent)) {
+            tsi.setSwitch(4,9, TSimInterface.SWITCH_RIGHT);
+          } 
+          if (sensor_active(10, 9, 2, sensorEvent)) {
+            semaphore1.acquire(1);
+            try {
+            tsi.setSpeed(id, 0);
+            } finally {
             tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+              semaphore1.release();
+            }
           }
-          if (sensorEvent.getXpos() == 16 && sensorEvent.getYpos() == 7
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+          if (sensor_active(17, 9, 1, sensorEvent)) {
+            semaphore1.acquire(1); 
+            try {
+            tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+            } finally {
+              tsi.setSwitch(15, 9, TSimInterface.SWITCH_LEFT);
+              semaphore1.release();
+            }
+          }
+          if (sensor_active(19, 8, 2, sensorEvent)) {
+            tsi.setSwitch(17, 7, TSimInterface.SWITCH_RIGHT);
+          } 
+          if (sensor_active(14, 7, 1 , sensorEvent)) {
             tsi.setSwitch(17, 7, TSimInterface.SWITCH_RIGHT);
           }
-          if (sensorEvent.getXpos() == 5 && sensorEvent.getYpos() == 9
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            tsi.setSwitch(4, 9, TSimInterface.SWITCH_LEFT);
-          }
-          if (sensorEvent.getXpos() == 1 && sensorEvent.getYpos() == 10
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            tsi.setSwitch(3, 11, TSimInterface.SWITCH_RIGHT);
-          }
-          if (sensorEvent.getXpos() == 10 && sensorEvent.getYpos() == 13
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
+          if (sensor_active(id, speed, id, sensorEvent)) {
             break_and_reverse(id, speed, sensorEvent);
           }
-
-          // NEW SENSOR.. V2
-          if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 11
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            if (direction == Train.Direction.SOUTH) {
-              break_and_reverse(id, speed, sensorEvent);
-            }
+          if (sensor_active(id, speed, id, sensorEvent)) {
+            break_and_reverse(id, speed, sensorEvent);
           }
-          if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 3
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            if (direction == Direction.NORTH) {
-              break_and_reverse(id, speed, sensorEvent);
-            }
+          if (sensor_active(id, speed, id, sensorEvent)) {
           }
-          if (sensorEvent.getXpos() == 10 && sensorEvent.getYpos() == 9
-                  && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
+          if (sensor_active(id, speed, id, sensorEvent)) {
           }
 
-          //if (sensorEvent.getXpos() == 13 && sensorEvent.getYpos() == 9
-               //   && sensorEvent.getStatus() == sensorEvent.ACTIVE) {
-            //if (direction == Train.Direction.NORTH){
-            //  System.out.print("test");
-             // tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
-
-          //}
         }
       } catch (Exception e) {
         e.printStackTrace();
-        ;
+        
       }
 
     }
