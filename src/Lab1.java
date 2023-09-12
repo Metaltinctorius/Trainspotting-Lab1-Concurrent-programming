@@ -20,15 +20,16 @@ public class Lab1 {
     Semaphore critical_section_1 = new Semaphore(1);
     Semaphore critical_section_2 = new Semaphore(1);
     Semaphore critical_section_3 = new Semaphore(1);
+  
     
 
     ArrayList <Semaphore> semaphores = new ArrayList<>();
     
 
-    semaphores.add( 0, critical_section_1);
-    semaphores.add(1,  critical_section_2);
-    semaphores.add( 2, critical_section_3);
-    System.out.println(semaphores);
+    semaphores.add(0,critical_section_1);
+    semaphores.add(1,critical_section_2);
+    semaphores.add(2, critical_section_3);
+    //System.out.println(semaphores);
 
     // ------------------------------------------------------------
 
@@ -159,7 +160,7 @@ public class Lab1 {
      *              tsi.setSpeed(id, 2);
      *              }
      */
-    public void set_speed_at_sensor(int x, int y, int id, int speed, SensorEvent se) {
+    /* public void set_speed_at_sensor(int x, int y, int id, int speed, SensorEvent se) {
       if (se.getXpos() == x
           && se.getYpos() == y
           && sensor_active(x, y, id, se)) {
@@ -171,43 +172,38 @@ public class Lab1 {
         }
       }
     }
+*/
+
+void drive() throws CommandException {
+  tsi.setSpeed(id, speed);
+}
+
+void stop() throws CommandException {
+  tsi.setSpeed(id, 0); 
+} 
+
+void reverse() throws CommandException {
+  speed = -1 * speed;
+  drive();
+}
 
     /**
      * Method for breaking and reversing (by setting speed to negative)
-     * 
+     * Remember to add the algorithm for wait at stations 
      * @param id
      * @param speed
      * @param se
      */
-    public void break_and_reverse(int id, int speed, SensorEvent se) {
+  /*  public void break_and_reverse(int id, int speed, SensorEvent se) {
       try {
         tsi.setSpeed(id, 0);
-        Thread.sleep(2000);
+        Thread.sleep(1000 + (20* speed));
         if (direction == Train.Direction.SOUTH) {
           tsi.setSpeed(id, -speed);
           reverseDirection(direction);
         } else {
           tsi.setSpeed(id, -speed);
           reverseDirection(direction);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    /**
-     * Sets the switch based on direciton. Maybe not needed.
-     * 
-     * @param x
-     * @param y
-     * @param direction
-     */
-    public void set_switch_dir(int x, int y, Direction direction) {
-      try {
-        if (direction == Train.Direction.NORTH) {
-          tsi.setSwitch(x, y, TSimInterface.SWITCH_RIGHT);
-        } else if (direction == Train.Direction.SOUTH) {
-          tsi.setSwitch(x, y, TSimInterface.SWITCH_LEFT);
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -265,40 +261,64 @@ public class Lab1 {
  * Critical Section 2.
  * --------------------------------------------------------------------------------------------------
  */
-          if (sensor_active(18, 9, id, sensorEvent)) {
+           if (sensor_active(19, 8, id, sensorEvent)) {
             if (direction == Train.Direction.SOUTH) {
               try {
-                if(critical_section_2.tryAcquire(1)){
-                  critical_section_2.acquire(1);
+                if (critical_section_2.tryAcquire()){
                   tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
-                  System.out.println(id + " acquired Semaphore Critical Section 2");
-                }else{
-                  tsi.setSwitch(15, 9, TSimInterface.SWITCH_LEFT);
-                  tsi.setSpeed(id, 6);
-                }
+                  System.out.println(" acquired Semaphore Critical Section " + semaphores.get(id));
+                } else {
+                  stop();
+                } 
+              
               }
               catch (Exception e) {
                 e.printStackTrace();
               }
             }
-          }
+          } 
             
-          
-            if(sensor_active(1, 10, id, sensorEvent)){
-              if(direction == Train.Direction.NORTH){
-                try{
-                    critical_section_2.acquire(1);
-                    System.out.println(id + " acquired semaphore");
-                    tsi.setSpeed(id, 12);
-                    tsi.setSwitch(4, 9, TSimInterface.SWITCH_LEFT);{
-                  }
-                    
-                }
-                catch (Exception e) {
+         if (sensor_active(1, 10, id, sensorEvent)) {
+            if (direction == Train.Direction.NORTH) {
+              try {
+                if (critical_section_2.tryAcquire()) {
+                  System.out.println(" acquired critical section ");
+                  tsi.setSwitch(4, 9, TSimInterface.SWITCH_LEFT);
+                } else {
+                  stop();
+              }
+            } 
+              catch (Exception e) {
                 e.printStackTrace();
-              }
-              }
+            } 
+          }
+         } 
+        
+        
+         // -- Temporary switch, was in 1,10 before but that one is probably too far away for an effienct flow ---
+         if (sensor_active(10, 9, id, sensorEvent)) {
+            if(direction == Train.Direction.NORTH) {
+              tsi.setSwitch(15, 9, TSimInterface.SWITCH_RIGHT);
             }
+          }
+          
+         
+         //------ Semaphore release from sensor positions, probably need some more of those -----------------------------------------------------------------------------------------------
+          if (sensor_active(18, 9, id, sensorEvent)) {
+            if(direction == Train.Direction.NORTH) {
+                critical_section_2.release();
+                  System.out.println(" Released critical section "); 
+                }  
+              }
+
+          if (sensor_active(18, 9, id, sensorEvent)) {
+            if(direction == Train.Direction.SOUTH) {
+                critical_section_2.release();
+                  System.out.println(" Released critical section "); 
+                }  
+              }
+
+
 
             //----------------------------------------------------------------------------------------------------------
 
@@ -307,7 +327,7 @@ public class Lab1 {
 
 
           //----------------------------------------- CRITICAL SECTION 3 ----------------------------------------------
-            if(sensor_active(10, 9, id, sensorEvent)){
+       /*      if(sensor_active(10, 9, id, sensorEvent)){
               if(direction == Train.Direction.NORTH){
                 try {
 
@@ -348,7 +368,7 @@ public class Lab1 {
                 e.printStackTrace();
               }
               }
-            }
+            } */
             //--------------------------------------------------------------------------------------------------------
 
 
@@ -403,9 +423,30 @@ public class Lab1 {
 
 
 
+          if (sensor_active(14, 3, id, sensorEvent) || sensor_active(14, 5, id, sensorEvent)) {
+            if (direction == Train.Direction.NORTH) {
+              stop();
+              reverseDirection(direction);
+              Thread.sleep(1000 + (20 * speed));
+              reverse();
+            }
+          }
 
-
-
+          if (sensor_active(13, 11, id, sensorEvent) || sensor_active(15, 13, id, sensorEvent)) {
+            if (direction == Train.Direction.SOUTH) {
+              stop();
+              reverseDirection(direction);
+              Thread.sleep(1000 + (20 * speed));
+              reverse();
+            }
+          }
+        } 
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+}
 
 
 
@@ -419,15 +460,15 @@ public class Lab1 {
            * Train 1 spawn location sensor, method for making any train that reaches
            * this point to brake and turn around, depending on direction, hence
            * only train 1 will be able to pass through at first initiation.
-           */
-          if (sensor_active(14, 3, id, sensorEvent)) {
+           
+           if (sensor_active(14, 3, id, sensorEvent)) {
             if (direction == Train.Direction.NORTH)
               break_and_reverse(id, speed, sensorEvent);
           }
           /**
            * Train 2 spawn location sensor. Any train that reaches this point will brake
            * and turn around.
-           */
+           
           if (sensor_active(13, 11, id, sensorEvent)) {
             if (direction == Train.Direction.SOUTH) {
               break_and_reverse(id, speed, sensorEvent);
@@ -435,7 +476,7 @@ public class Lab1 {
           }
           /**
            * Destination for train 1 (Station in south part of map).
-           */
+           
           if (sensor_active(15, 13, id, sensorEvent)) {
             if (direction == Train.Direction.SOUTH) {
               break_and_reverse(id, speed, sensorEvent);
@@ -443,7 +484,7 @@ public class Lab1 {
           }
           /**
            * Destination for train 2 (station in north part of map)
-           */
+           
           if (sensor_active(14, 5, id, sensorEvent)) {
             System.out.println("Before brake and reverse " + id);
             // if (direction == Train.Direction.NORTH) {
@@ -452,10 +493,5 @@ public class Lab1 {
             // }
           }
         }
+     */ 
 
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-  }
-}
