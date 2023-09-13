@@ -285,7 +285,7 @@ void reverse() throws CommandException {
                   System.out.println(" acquired critical section ");
                   tsi.setSwitch(4, 9, TSimInterface.SWITCH_LEFT);
                 } else {
-                  stop();
+                 tsi.setSwitch(4, 9, TSimInterface.SWITCH_RIGHT); 
               }
             } 
               catch (Exception e) {
